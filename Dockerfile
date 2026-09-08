@@ -6,7 +6,10 @@ WORKDIR /app
 
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# postinstall runs `prisma generate`, which needs the schema and config.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml prisma.config.ts ./
+COPY prisma ./prisma
+
 RUN pnpm install --frozen-lockfile
 
 # ── Build ───────────────────────────────────────────────────────────────────
@@ -18,17 +21,17 @@ RUN corepack enable
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# The Prisma client is generated into lib/generated, which the build imports.
+# Regenerate against the full source tree; output lands in lib/generated.
 RUN pnpm prisma generate
 
-# Build-time placeholders: nothing here connects to the database or reads real
-# secrets, but the modules that hold them are imported during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
-ENV AUTH_SECRET="build-time-placeholder-not-used-at-runtime"
-ENV ENCRYPTION_KEY="YnVpbGQtdGltZS1wbGFjZWhvbGRlci0zMi1ieXRlcyE="
 
-RUN pnpm build
+# Placeholders for modules that read these at import time. Nothing here reaches
+# a database or a real secret, and they do not persist into the final image.
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
+    AUTH_SECRET="build-time-placeholder-not-used-at-runtime" \
+    ENCRYPTION_KEY="YnVpbGQtdGltZS1wbGFjZWhvbGRlci0zMi1ieXRlcyE=" \
+    pnpm build
 
 # ── Runtime ─────────────────────────────────────────────────────────────────
 FROM node:24-alpine AS runner
@@ -44,18 +47,18 @@ ENV UPLOAD_DIR=/app/uploads
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# `prisma`, `dotenv` and `tsx` are runtime dependencies here on purpose: the
-# container applies migrations on start and needs `pnpm admin:create` to be
-# runnable in a shell against the live database.
-RUN pnpm install --prod --frozen-lockfile
+# Prisma files are needed because pnpm install runs the postinstall script
+COPY prisma ./prisma
+COPY prisma.config.ts ./
+
+RUN pnpm install --frozen-lockfile
 
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/lib/generated ./lib/generated
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/prisma.config.ts ./
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/scripts ./scripts
 COPY docker-entrypoint.sh ./
 
