@@ -64,7 +64,7 @@ export function Partners() {
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: easeOut, delay: 0.3 }}
           >
-            <Button size="lg" className="group h-12 bg-navy px-6 text-base text-navy-foreground hover:bg-navy-deep" nativeButton={false} render={<Link href="#contact" />}>
+            <Button size="lg" className="group h-12 bg-navy px-6 text-base text-navy-foreground hover:bg-navy-deep" nativeButton={false} render={<Link href="/register" />}>
                 Apply for a sourcing code
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </Button>

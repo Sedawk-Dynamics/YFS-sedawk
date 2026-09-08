@@ -1,6 +1,13 @@
 'use client'
 
-import { motion, useInView, useMotionValue, useSpring, type Variants } from 'framer-motion'
+import {
+  motion,
+  useInView,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  type Variants,
+} from 'framer-motion'
 import { useEffect, useRef, type ReactNode } from 'react'
 
 export const easeOut = [0.22, 1, 0.36, 1] as const
@@ -83,23 +90,36 @@ export function Counter({
 }) {
   const ref = useRef<HTMLSpanElement>(null)
   const inView = useInView(ref, { once: true, margin: '-40px' })
+  const reduceMotion = useReducedMotion()
   const mv = useMotionValue(0)
   const spring = useSpring(mv, { stiffness: 60, damping: 20 })
 
+  const format = (n: number) => `${prefix}${Math.round(n).toLocaleString('en-IN')}${suffix}`
+
+  // The final figure is what the server renders, so it is what a crawler, a
+  // reader without JavaScript, or anyone with reduced motion sees. The count-up
+  // only replaces it once we know it can run.
   useEffect(() => {
-    if (inView) mv.set(value)
-  }, [inView, value, mv])
+    if (reduceMotion) return
+    if (ref.current) ref.current.textContent = format(0)
+  }, [reduceMotion])
 
   useEffect(() => {
-    const unsub = spring.on('change', (v) => {
-      if (ref.current) ref.current.textContent = `${prefix}${Math.round(v).toLocaleString('en-IN')}${suffix}`
+    if (reduceMotion || !inView) return
+    mv.set(value)
+  }, [inView, value, mv, reduceMotion])
+
+  useEffect(() => {
+    if (reduceMotion) return
+    const unsubscribe = spring.on('change', (current) => {
+      if (ref.current) ref.current.textContent = format(current)
     })
-    return unsub
-  }, [spring, prefix, suffix])
+    return unsubscribe
+  }, [spring, prefix, suffix, reduceMotion])
 
   return (
     <span ref={ref} className={className}>
-      {prefix}0{suffix}
+      {format(value)}
     </span>
   )
 }

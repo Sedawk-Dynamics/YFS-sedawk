@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useScroll, useMotionValueEvent } from 'framer-
 import { Menu, Phone, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { easeOut } from './motion'
 
@@ -21,7 +21,22 @@ export function Navbar() {
   const [open, setOpen] = useState(false)
   const { scrollY } = useScroll()
 
-  useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 24))
+  // Only dispatch when the boundary is actually crossed, rather than on every
+  // scroll frame.
+  useMotionValueEvent(scrollY, 'change', (y) => {
+    const next = y > 24
+    setScrolled((current) => (current === next ? current : next))
+  })
+
+  // Escape closes the mobile menu, matching what a dialog would do.
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [open])
 
   return (
     <motion.header
@@ -77,7 +92,15 @@ export function Navbar() {
             <Phone className="size-4 text-gold" />
             +91 87912 52779
           </a>
-          <Button className="bg-gold-gradient text-navy-deep hover:opacity-90 font-semibold shadow-md" nativeButton={false} render={<Link href="#partners" />}>Become a Partner</Button>
+          <Link
+            href="/login"
+            className={`text-sm font-medium transition-colors ${
+              scrolled ? 'text-navy-deep/80 hover:text-navy-deep' : 'text-navy-foreground/80 hover:text-navy-foreground'
+            }`}
+          >
+            Partner Login
+          </Link>
+          <Button className="bg-gold-gradient text-navy-deep hover:opacity-90 font-semibold shadow-md" nativeButton={false} render={<Link href="/register" />}>Become a Partner</Button>
         </div>
 
         <button
@@ -121,10 +144,19 @@ export function Navbar() {
                   </Link>
                 </motion.li>
               ))}
+              <li>
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="block rounded-md px-3 py-3 text-base font-medium text-navy-deep hover:bg-muted"
+                >
+                  Partner Login
+                </Link>
+              </li>
               <li className="pt-2">
                 <Button
                   className="w-full bg-gold-gradient text-navy-deep font-semibold"
-                  nativeButton={false} render={<Link href="#partners" onClick={() => setOpen(false)} />}
+                  nativeButton={false} render={<Link href="/register" onClick={() => setOpen(false)} />}
                 >
                   Become a Partner
                 </Button>

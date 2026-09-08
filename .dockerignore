@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.gitignore
+.env
+.env.*.local
+.uploads
+lib/generated
+*.log
+server-*.log
+tsconfig.tsbuildinfo
+README.md
+.vscode
+.idea

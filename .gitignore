@@ -13,3 +13,17 @@ __v0_jsx-dev-runtime.ts
 node_modules
 .next/
 .DS_Store
+# Local environment
+.env
+
+# Prisma generated client
+lib/generated/
+
+# Dev server log
+dev.log
+
+# Local dev uploads
+.uploads/
+
+# Test server logs
+server-*.log
