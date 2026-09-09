@@ -21,6 +21,28 @@ function secret() {
   return new TextEncoder().encode(raw)
 }
 
+/**
+ * Whether to mark the session cookie `Secure`.
+ *
+ * A `Secure` cookie is silently discarded by the browser over plain HTTP, which
+ * makes login appear to succeed and then bounce straight back to the login
+ * page. Deriving this from the configured app URL keeps the flag on for every
+ * https:// deployment while letting an http:// test host (a Dokploy
+ * *.traefik.me domain, say) actually work.
+ *
+ * COOKIE_SECURE overrides the inference in either direction.
+ */
+function useSecureCookies() {
+  const override = process.env.COOKIE_SECURE
+  if (override === 'true') return true
+  if (override === 'false') return false
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (appUrl) return appUrl.startsWith('https://')
+
+  return process.env.NODE_ENV === 'production'
+}
+
 export async function signSession(payload: SessionPayload, remember = false) {
   const maxAge = remember ? REMEMBER_MAX_AGE : DEFAULT_MAX_AGE
   const token = await new SignJWT({ role: payload.role, email: payload.email, name: payload.name })
@@ -53,7 +75,7 @@ export async function createSessionCookie(payload: SessionPayload, remember = fa
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: useSecureCookies(),
     path: '/',
     maxAge,
   })
