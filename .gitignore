@@ -27,3 +27,12 @@ dev.log
 
 # Test server logs
 server-*.log
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
+
+# AI tooling
+.agents/
+.claude/
+.windsurf/
+skills-lock.json

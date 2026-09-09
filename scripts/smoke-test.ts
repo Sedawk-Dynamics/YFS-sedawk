@@ -83,10 +83,16 @@ async function main() {
   console.log(`\nSmoke-testing ${BASE}\n`)
 
   const admin = await prisma.user.findFirstOrThrow({ where: { role: 'ADMIN' } })
-  const dsa = await prisma.user.findFirst({
+  // Prefer a DSA that actually has documents and a payout slip, so the file
+  // access checks are exercised rather than silently skipped.
+  const candidates = await prisma.user.findMany({
     where: { role: 'DSA', status: 'APPROVED' },
     include: { documents: true, payouts: true },
   })
+  const dsa =
+    candidates.find((u) => u.documents.length > 0 && u.payouts.some((p) => p.slipFileUrl)) ??
+    candidates.find((u) => u.documents.length > 0) ??
+    candidates[0]
   const pendingDsa = await prisma.user.findFirst({ where: { role: 'DSA', status: 'PENDING' } })
   const otherDsa = await prisma.user.findFirst({
     where: { role: 'DSA', status: 'APPROVED', id: { not: dsa?.id ?? '' } },

@@ -1,0 +1,7 @@
+# Files executed inside the Linux container must keep LF endings. A CRLF in a
+# shell script makes the kernel fail with "bad interpreter: /bin/sh^M".
+*.sh text eol=lf
+docker-entrypoint.sh text eol=lf
+Dockerfile text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf

@@ -47,11 +47,13 @@ ENV UPLOAD_DIR=/app/uploads
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Prisma files are needed because pnpm install runs the postinstall script
+# The postinstall script runs `prisma generate`, which needs these.
 COPY prisma ./prisma
 COPY prisma.config.ts ./
 
-RUN pnpm install --frozen-lockfile
+# --prod is safe: prisma, dotenv and tsx are runtime dependencies, so the
+# container can still migrate on start and run `pnpm admin:create` in a shell.
+RUN pnpm install --prod --frozen-lockfile
 
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
@@ -62,11 +64,16 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/scripts ./scripts
 COPY docker-entrypoint.sh ./
 
+# A corepack home the runtime user can write to, so `pnpm admin:create` works
+# in Dokploy's terminal without trying to re-download pnpm.
+ENV COREPACK_HOME=/app/.corepack
+
 RUN chmod +x docker-entrypoint.sh \
-  && mkdir -p /app/uploads \
+  && mkdir -p /app/uploads /app/.corepack \
+  && corepack prepare pnpm@10.23.0 --activate \
   && addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs \
-  && chown -R nextjs:nodejs /app/uploads /app/.next
+  && chown -R nextjs:nodejs /app/uploads /app/.next /app/.corepack
 
 USER nextjs
 
@@ -75,4 +82,4 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["pnpm", "start"]
+CMD ["./node_modules/.bin/next", "start"]

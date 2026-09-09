@@ -16,7 +16,12 @@ if [ -z "$ENCRYPTION_KEY" ]; then
 fi
 
 UPLOADS="${UPLOAD_DIR:-/app/uploads}"
-mkdir -p "$UPLOADS"
+# `set -e` would abort on a failed mkdir with a bare error, so handle it here
+# and say what to actually check.
+if ! mkdir -p "$UPLOADS" 2>/dev/null; then
+  echo "FATAL: could not create $UPLOADS. Check the volume mount path." >&2
+  exit 1
+fi
 if [ ! -w "$UPLOADS" ]; then
   echo "FATAL: $UPLOADS is not writable. Check the volume mount and its ownership." >&2
   exit 1
@@ -25,8 +30,12 @@ echo "Uploads directory ready: $UPLOADS"
 
 # Bring the schema up to date before serving. `migrate deploy` only applies
 # migrations that already exist, so it never generates or guesses anything.
+#
+# Invoked directly rather than through pnpm: corepack was enabled as root at
+# build time, so resolving pnpm as the unprivileged runtime user would try to
+# download it again and make startup depend on network egress.
 echo "Applying database migrations..."
-pnpm exec prisma migrate deploy
+./node_modules/.bin/prisma migrate deploy
 
 echo "Starting YFS Infinity portal..."
 exec "$@"
