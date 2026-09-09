@@ -182,7 +182,6 @@ export function RegisterForm() {
   const [email, setEmail] = useState('')
   const [mobile, setMobile] = useState('')
   const [emailVerified, setEmailVerified] = useState(false)
-  const [mobileVerified, setMobileVerified] = useState(false)
   const [hasReferCode, setHasReferCode] = useState<'yes' | 'no'>('no')
   const [password, setPassword] = useState('')
   const [fileError, setFileError] = useState<string | null>(null)
@@ -245,7 +244,8 @@ export function RegisterForm() {
         : `${errorCount} fields need your attention. They are highlighted below.`
       : null)
 
-  const bothVerified = emailVerified && mobileVerified
+  // Only email is OTP-verified; there is no SMS provider wired up.
+  const contactVerified = emailVerified
   const isLast = step === STEPS.length - 1
 
   if (state.status === 'success') {
@@ -359,8 +359,7 @@ export function RegisterForm() {
               setMobile('')
               setPassword('')
               setEmailVerified(false)
-              setMobileVerified(false)
-              setHasReferCode('no')
+                      setHasReferCode('no')
             }}
             className="shrink-0 font-medium underline underline-offset-4"
           >
@@ -460,20 +459,29 @@ export function RegisterForm() {
           serverError={errorFor('email')}
         />
 
-        <OtpField
-          channel="mobile"
-          id="mobile"
-          name="mobile"
-          label="Mobile number"
-          placeholder="9876543210"
-          autoComplete="tel-national"
-          hint="10-digit Indian mobile number."
-          value={mobile}
-          onValueChange={setMobile}
-          verified={mobileVerified}
-          onVerified={setMobileVerified}
-          serverError={errorFor('mobile')}
-        />
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="mobile">
+            Mobile number <Required />
+          </Label>
+          <Input
+            id="mobile"
+            name="mobile"
+            type="tel"
+            inputMode="numeric"
+            required
+            autoComplete="tel-national"
+            placeholder="9876543210"
+            value={mobile}
+            onChange={(event) => setMobile(event.target.value)}
+            aria-invalid={Boolean(errorFor('mobile'))}
+            className="h-10"
+          />
+          {errorFor('mobile') ? (
+            <FieldError message={errorFor('mobile')} />
+          ) : (
+            <p className="text-xs text-muted-foreground">10-digit Indian mobile number.</p>
+          )}
+        </div>
 
         <div className="flex flex-col gap-2">
           <Label htmlFor="alternateNumber">Alternate number</Label>
@@ -845,10 +853,10 @@ export function RegisterForm() {
         </label>
         <FieldError message={errorFor('terms')} />
 
-        {!bothVerified && (
+        {!contactVerified && (
           <p className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
             <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
-            Verify both your email and mobile number in the Contact step before submitting.
+            Verify your email address in the Contact step before submitting.
           </p>
         )}
       </div>
@@ -867,7 +875,7 @@ export function RegisterForm() {
         </Button>
 
         {isLast ? (
-          <SubmitButton disabled={!bothVerified} />
+          <SubmitButton disabled={!contactVerified} />
         ) : (
           <Button
             type="button"

@@ -31,17 +31,14 @@ export async function submitRegistration(
     cheque: File | null
   },
 ): Promise<SubmitResult> {
-  // Re-verify OTP server-side. The client marks fields "verified", but only the
-  // consumed OTP records prove it.
+  // Re-verify the email OTP server-side. The client marks the field "verified",
+  // but only the consumed OTP record proves it.
+  //
+  // The mobile number is collected but not challenged: there is no SMS provider
+  // wired up, so a code sent there would never arrive. It is recorded as
+  // unverified, which the admin sees on the application detail page.
   if (!(await wasRecentlyVerified(input.email, 'REGISTER_EMAIL'))) {
     return { ok: false, error: 'Verify your email with the OTP before submitting.', field: 'email' }
-  }
-  if (!(await wasRecentlyVerified(input.mobile, 'REGISTER_MOBILE'))) {
-    return {
-      ok: false,
-      error: 'Verify your mobile number with the OTP before submitting.',
-      field: 'mobile',
-    }
   }
 
   const [emailTaken, mobileTaken, panTaken] = await Promise.all([
@@ -114,7 +111,7 @@ export async function submitRegistration(
         email: input.email,
         emailVerified: true,
         mobile: input.mobile,
-        mobileVerified: true,
+        mobileVerified: false,
         passwordHash: await hashPassword(input.password),
         status: 'PENDING',
         // The referrer link is only committed on approval (spec §3 stage 6);

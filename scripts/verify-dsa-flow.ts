@@ -99,9 +99,9 @@ const docs = () => ({
   cheque: null,
 })
 
-async function verifyBoth(email: string, mobile: string) {
+/** Only the email address is challenged; there is no SMS provider. */
+async function verifyContact(email: string) {
   await verifyOtp(email, 'REGISTER_EMAIL', await issueAndRead(email, 'REGISTER_EMAIL'))
-  await verifyOtp(mobile, 'REGISTER_MOBILE', await issueAndRead(mobile, 'REGISTER_MOBILE'))
 }
 
 const created: string[] = []
@@ -143,11 +143,11 @@ async function main() {
   // ── 2. Registration requires verified contact details ────────────────────
   const unverified = registrationSchema.parse(baseInput(1))
   const blocked = await submitRegistration(unverified, docs())
-  check('submit is blocked without OTP verification', !blocked.ok)
+  check('submit is blocked without email OTP verification', !blocked.ok)
 
   // ── 3. A complete registration ───────────────────────────────────────────
   const soloInput = registrationSchema.parse(baseInput(2))
-  await verifyBoth(soloInput.email, soloInput.mobile)
+  await verifyContact(soloInput.email)
   const solo = await submitRegistration(soloInput, docs())
   check('a fully verified application is accepted', solo.ok)
   if (!solo.ok) throw new Error(solo.error)
@@ -159,7 +159,8 @@ async function main() {
   })
   check('status starts as PENDING', saved.status === 'PENDING')
   check('no codes before approval', saved.institutionCode === null && saved.referCode === null)
-  check('email and mobile marked verified', saved.emailVerified && saved.mobileVerified)
+  check('email marked verified', saved.emailVerified)
+  check('mobile recorded as unverified', saved.mobileVerified === false)
   check('password is stored hashed, not in plaintext', saved.passwordHash !== PASSWORD)
   check('the chosen password verifies', await verifyPassword(PASSWORD, saved.passwordHash))
   check('all four required documents stored', saved.documents.length === 4)
@@ -182,7 +183,7 @@ async function main() {
 
   // ── 4. Duplicate email is refused ────────────────────────────────────────
   const dupInput = registrationSchema.parse({ ...baseInput(3), email: soloInput.email })
-  await verifyBoth(dupInput.email, dupInput.mobile)
+  await verifyContact(dupInput.email)
   const dup = await submitRegistration(dupInput, docs())
   check('a duplicate email is refused', !dup.ok)
 
@@ -192,7 +193,7 @@ async function main() {
   const referrer = await prisma.user.findUniqueOrThrow({ where: { id: solo.applicationId } })
 
   const referredInput = registrationSchema.parse(baseInput(4, referrer.referCode!))
-  await verifyBoth(referredInput.email, referredInput.mobile)
+  await verifyContact(referredInput.email)
   const referred = await submitRegistration(referredInput, docs())
   check(
     'registration with a valid Refer Code is accepted',
@@ -207,7 +208,7 @@ async function main() {
   }
 
   const impostorInput = registrationSchema.parse(baseInput(5, referrer.institutionCode!))
-  await verifyBoth(impostorInput.email, impostorInput.mobile)
+  await verifyContact(impostorInput.email)
   const impostor = await submitRegistration(impostorInput, docs())
   check('an Institution Code is refused at registration', !impostor.ok)
   check(
@@ -216,7 +217,7 @@ async function main() {
   )
 
   const unknownInput = registrationSchema.parse(baseInput(6, 'REF-ZZZZZZ'))
-  await verifyBoth(unknownInput.email, unknownInput.mobile)
+  await verifyContact(unknownInput.email)
   const unknown = await submitRegistration(unknownInput, docs())
   check('an unknown Refer Code is refused', !unknown.ok)
 
