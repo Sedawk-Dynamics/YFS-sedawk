@@ -60,6 +60,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/prisma.config.ts ./
+# tsx resolves the "@/*" path alias from tsconfig.json. Without it, the admin
+# and seed scripts fail with "Cannot find module '@/lib/generated/prisma/client'".
+COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/scripts ./scripts
 COPY docker-entrypoint.sh ./
