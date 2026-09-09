@@ -105,7 +105,9 @@ async function main() {
   })
 
   console.log('\n  Admin account created.\n')
-  console.log(`    Login URL   http://localhost:3000/admin/login`)
+  // Hardcoding localhost told a production admin to visit the wrong host.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  console.log(`    Login URL   ${appUrl}/admin/login`)
   console.log(`    Email       ${admin.email}`)
   if (generated) {
     console.log(`    Password    ${password}`)
