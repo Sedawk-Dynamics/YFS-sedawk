@@ -184,6 +184,7 @@ export function RegisterForm() {
   const [emailVerified, setEmailVerified] = useState(false)
   const [hasReferCode, setHasReferCode] = useState<'yes' | 'no'>('no')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [fileError, setFileError] = useState<string | null>(null)
   // Fields edited since the last submit. Their errors are stale, so they are
   // suppressed until the form is submitted again and re-validated.
@@ -192,7 +193,7 @@ export function RegisterForm() {
     status: 'idle',
   })
   const formRef = useRef<HTMLFormElement>(null)
-  const { draft, restored, save, clear } = useFormDraft('yfs-registration-draft')
+  const { draft, restored, save, clear, readSaved } = useFormDraft('yfs-registration-draft')
   const [draftNotice, setDraftNotice] = useState(false)
 
   // Put the saved answers back once, after the first render.
@@ -212,14 +213,37 @@ export function RegisterForm() {
     if (state.status === 'success') clear()
   }, [state.status, clear])
 
-  // Send the applicant to the earliest step that has a rejected field.
+  // React 19 resets the form once a server action settles, which clears every
+  // uncontrolled input. Restore the saved answers, then send the applicant to
+  // the earliest step that still needs attention.
   useEffect(() => {
     if (state.status !== 'error') return
-    const steps = Object.keys(state.fieldErrors)
+
+    const form = formRef.current
+    const saved = readSaved()
+    if (form && saved) applyDraft(form, saved)
+
+    const invalid = Object.keys(state.fieldErrors)
+    const steps = invalid
       .map((field) => FIELD_STEP[field])
       .filter((index) => index !== undefined)
     if (steps.length > 0) setStep(Math.min(...steps))
-  }, [state])
+
+    // Focus and select the first bad field so it can be corrected in one go,
+    // without losing what was typed.
+    if (form && invalid.length > 0) {
+      const first = invalid
+        .slice()
+        .sort((a, b) => (FIELD_STEP[a] ?? 99) - (FIELD_STEP[b] ?? 99))[0]
+      const element = form.elements.namedItem(first)
+      if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+        requestAnimationFrame(() => {
+          element.focus()
+          if (element.type !== 'file' && element.type !== 'checkbox') element.select?.()
+        })
+      }
+    }
+  }, [state, readSaved])
 
   const rawFieldErrors = state.status === 'error' ? state.fieldErrors : {}
   const fieldErrors = Object.fromEntries(
@@ -358,6 +382,7 @@ export function RegisterForm() {
               setEmail('')
               setMobile('')
               setPassword('')
+              setConfirmPassword('')
               setEmailVerified(false)
                       setHasReferCode('no')
             }}
@@ -832,6 +857,8 @@ export function RegisterForm() {
               type="password"
               required
               autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
               aria-invalid={Boolean(errorFor('confirmPassword'))}
               className="h-10"
             />

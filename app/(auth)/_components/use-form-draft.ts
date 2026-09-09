@@ -70,6 +70,16 @@ export function useFormDraft(storageKey: string) {
     [storageKey],
   )
 
+  /** Reads the saved values back synchronously, for restoring after a reset. */
+  const readSaved = useCallback((): Draft | null => {
+    try {
+      const raw = sessionStorage.getItem(storageKey)
+      return raw ? (JSON.parse(raw) as Draft) : null
+    } catch {
+      return null
+    }
+  }, [storageKey])
+
   const clear = useCallback(() => {
     if (saveTimer.current) clearTimeout(saveTimer.current)
     try {
@@ -80,7 +90,7 @@ export function useFormDraft(storageKey: string) {
     setDraft(null)
   }, [storageKey])
 
-  return { draft, restored, save, clear }
+  return { draft, restored, save, clear, readSaved }
 }
 
 /** Writes saved values back into a form's uncontrolled inputs. */
