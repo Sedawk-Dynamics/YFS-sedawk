@@ -176,7 +176,7 @@ export function PayoutRowActions({
         onConfirm={() => run(updatePaidAmount, (fd) => fd.set('paidAmount', paid))}
       >
         <div className="flex flex-col gap-2 text-left">
-          <Label htmlFor={`paid-${payoutId}`}>Paid amount (₹)</Label>
+          <Label htmlFor={`paid-${payoutId}`}>DSA Payout (₹)</Label>
           <Input
             id={`paid-${payoutId}`}
             type="number"

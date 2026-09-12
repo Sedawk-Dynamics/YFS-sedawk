@@ -191,7 +191,7 @@ export function AddPayoutDialog({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="paidAmount">Paid amount (₹)</Label>
+                <Label htmlFor="paidAmount">DSA Payout (₹)</Label>
                 <Input
                   id="paidAmount"
                   name="paidAmount"

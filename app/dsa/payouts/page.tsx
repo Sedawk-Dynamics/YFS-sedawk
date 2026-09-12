@@ -135,7 +135,7 @@ export default async function DsaPayoutsPage({
                   <TableHead className="pl-(--card-spacing)">Month</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Paid</TableHead>
+                  <TableHead className="text-right">DSA Payout</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="pr-(--card-spacing)">Salary slip</TableHead>
                 </TableRow>

@@ -121,7 +121,7 @@ export default async function PayoutsPage({
                   <TableHead>DSA Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead className="text-right">Total Earnings</TableHead>
-                  <TableHead className="text-right">Paid Amount</TableHead>
+                  <TableHead className="text-right">DSA Payout</TableHead>
                   <TableHead className="text-right">Payable Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="pr-(--card-spacing) text-right">Actions</TableHead>

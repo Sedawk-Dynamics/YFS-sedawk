@@ -108,7 +108,7 @@ export default async function DsaPayoutDetailPage({
                   <TableHead className="pl-(--card-spacing)">Category</TableHead>
                   <TableHead>Loan type</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Paid</TableHead>
+                  <TableHead className="text-right">DSA Payout</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Slip</TableHead>
                   <TableHead className="pr-(--card-spacing) text-right">Actions</TableHead>
@@ -199,7 +199,7 @@ export default async function DsaPayoutDetailPage({
                 <TableRow>
                   <TableHead className="pl-(--card-spacing)">Month</TableHead>
                   <TableHead className="text-right">Total earnings</TableHead>
-                  <TableHead className="text-right">Paid</TableHead>
+                  <TableHead className="text-right">DSA Payout</TableHead>
                   <TableHead className="text-right">Payable</TableHead>
                   <TableHead className="pr-(--card-spacing)">Status</TableHead>
                 </TableRow>
