@@ -1,15 +1,12 @@
 'use client'
 
 import {
-  BarChart3,
-  Bell,
   ChevronDown,
   KeyRound,
   LayoutDashboard,
   LogOut,
   Menu,
   Network,
-  Settings,
   UserCircle,
   Users,
   Wallet,
@@ -25,9 +22,6 @@ const mainNav = [
   { href: '/admin/registrations', label: 'DSA Registrations', icon: Users },
   { href: '/admin/payouts', label: 'Payout Management', icon: Wallet },
   { href: '/admin/referrals', label: 'Referral Hierarchy', icon: Network },
-  { href: '/admin/notifications', label: 'Notifications', icon: Bell },
-  { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
 const accountNav = [
@@ -130,14 +124,6 @@ export function AdminShell({
           </button>
 
           <div className="ml-auto flex items-center gap-2">
-            <Link
-              href="/admin/notifications"
-              className="relative inline-flex size-9 items-center justify-center rounded-md text-navy-deep hover:bg-muted"
-              aria-label="Notifications"
-            >
-              <Bell className="size-5" aria-hidden />
-            </Link>
-
             <div className="relative">
               <button
                 type="button"
