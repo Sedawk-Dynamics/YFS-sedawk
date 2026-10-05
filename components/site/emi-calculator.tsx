@@ -1,9 +1,7 @@
 'use client'
 
-import { ArrowRight, Info } from 'lucide-react'
-import Link from 'next/link'
+import { Info } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Reveal, SectionHeading } from './motion'
 
 /**
@@ -248,16 +246,6 @@ export function EmiCalculator() {
                   </li>
                 </ul>
               </div>
-
-              <Button
-                size="lg"
-                className="group h-12 w-full bg-gold-gradient text-base font-semibold text-navy-deep hover:opacity-90 sm:w-fit sm:px-6"
-                nativeButton={false}
-                render={<Link href="/register" />}
-              >
-                Check your eligibility
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
-              </Button>
             </div>
           </div>
         </Reveal>
