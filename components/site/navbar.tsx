@@ -52,9 +52,9 @@ export function Navbar() {
     >
       <nav
         aria-label="Primary"
-        className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 md:px-8"
+        className="mx-auto flex h-20 w-full max-w-[100rem] items-center gap-4 px-4 md:px-6"
       >
-        <Link href="#top" className="flex items-center" aria-label="YFS Infinity home">
+        <Link href="#top" className="flex shrink-0 items-center" aria-label="YFS Infinity home">
           <Image
             src="/images/yfs-logo.png"
             alt="YFS Infinity — The Benchmark of Financial Excellence"
@@ -67,12 +67,12 @@ export function Navbar() {
           />
         </Link>
 
-        <ul className="hidden items-center gap-8 lg:flex">
+        <ul className="ml-10 hidden items-center gap-7 xl:flex">
           {links.map((l) => (
             <li key={l.href}>
               <Link
                 href={l.href}
-                className={`group relative text-sm font-medium tracking-wide transition-colors ${
+                className={`group relative text-sm font-medium tracking-wide whitespace-nowrap transition-colors ${
                   scrolled ? 'text-navy-deep/80 hover:text-navy-deep' : 'text-navy-foreground/80 hover:text-navy-foreground'
                 }`}
               >
@@ -83,10 +83,10 @@ export function Navbar() {
           ))}
         </ul>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="ml-auto hidden items-center gap-5 xl:flex">
           <a
             href="tel:+918791252779"
-            className={`flex items-center gap-2 text-sm font-medium ${
+            className={`flex shrink-0 items-center gap-2 text-sm font-medium whitespace-nowrap ${
               scrolled ? 'text-navy-deep' : 'text-navy-foreground'
             }`}
           >
@@ -95,13 +95,13 @@ export function Navbar() {
           </a>
           <Link
             href="/login"
-            className={`text-sm font-medium transition-colors ${
+            className={`shrink-0 text-sm font-medium whitespace-nowrap transition-colors ${
               scrolled ? 'text-navy-deep/80 hover:text-navy-deep' : 'text-navy-foreground/80 hover:text-navy-foreground'
             }`}
           >
             Partner Login
           </Link>
-          <Button className="bg-gold-gradient text-navy-deep hover:opacity-90 font-semibold shadow-md" nativeButton={false} render={<Link href="/register" />}>Become a Partner</Button>
+          <Button className="shrink-0 bg-gold-gradient font-semibold whitespace-nowrap text-navy-deep shadow-md hover:opacity-90" nativeButton={false} render={<Link href="/register" />}>Become a Partner</Button>
         </div>
 
         <button
@@ -109,7 +109,7 @@ export function Navbar() {
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="mobile-menu"
-          className={`inline-flex size-10 items-center justify-center rounded-md lg:hidden ${
+          className={`ml-auto inline-flex size-10 shrink-0 items-center justify-center rounded-md xl:hidden ${
             scrolled ? 'text-navy-deep' : 'text-navy-foreground'
           }`}
         >
@@ -126,7 +126,7 @@ export function Navbar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.35, ease: easeOut }}
-            className="overflow-hidden border-t border-border bg-background lg:hidden"
+            className="overflow-hidden border-t border-border bg-background xl:hidden"
           >
             <ul className="flex flex-col gap-1 px-5 py-4">
               {links.map((l, i) => (
