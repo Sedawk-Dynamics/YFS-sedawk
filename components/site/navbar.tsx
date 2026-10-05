@@ -12,6 +12,7 @@ const links = [
   { href: '#about', label: 'About' },
   { href: '#services', label: 'Services' },
   { href: '#products', label: 'Loan Products' },
+  { href: '#emi-calculator', label: 'EMI Calculator' },
   { href: '#partners', label: 'For DSAs' },
   { href: '#contact', label: 'Contact' },
 ]

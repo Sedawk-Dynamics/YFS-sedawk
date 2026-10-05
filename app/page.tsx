@@ -1,5 +1,6 @@
 import { About } from '@/components/site/about'
 import { Contact } from '@/components/site/contact'
+import { EmiCalculator } from '@/components/site/emi-calculator'
 import { Faq } from '@/components/site/faq'
 import { Footer } from '@/components/site/footer'
 import { Hero } from '@/components/site/hero'
@@ -17,6 +18,7 @@ export default function Home() {
         <About />
         <Services />
         <Products />
+        <EmiCalculator />
         <Partners />
         <Faq />
         <Contact />
