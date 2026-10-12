@@ -52,10 +52,21 @@ const rupees = new Intl.NumberFormat('en-IN', {
   maximumFractionDigits: 0,
 })
 
-/** Indian-style short form, so slider labels stay readable at a glance. */
+/**
+ * Indian-style short form, so figures stay readable at a glance.
+ *
+ * The unit is chosen from the *rounded* value, not the raw one. Picking it
+ * first meant ₹99,99,999 rounded to "₹100 L" rather than promoting to "₹1 Cr".
+ */
 function compactRupees(value: number) {
-  if (value >= 10_000_000) return `₹${(value / 10_000_000).toFixed(2).replace(/\.00$/, '')} Cr`
-  if (value >= 100_000) return `₹${(value / 100_000).toFixed(2).replace(/\.00$/, '')} L`
+  const trim = (n: string) => n.replace(/\.00$/, '')
+
+  const crore = (value / 10_000_000).toFixed(2)
+  if (Number(crore) >= 1) return `₹${trim(crore)} Cr`
+
+  const lakh = (value / 100_000).toFixed(2)
+  if (Number(lakh) >= 1) return `₹${trim(lakh)} L`
+
   return rupees.format(value)
 }
 
@@ -110,15 +121,25 @@ function Slider({
   )
 }
 
+/**
+ * Past a crore the full figure stops being readable — ₹3,70,10,40,383 takes
+ * real effort to parse. Those show the compact form with the exact rupee
+ * amount kept directly beneath, so nothing is lost. Everyday loans stay well
+ * under the threshold and are unchanged.
+ */
+const COMPACT_ABOVE = 10_000_000
+
 function Figure({
   label,
-  value,
+  amount,
   emphasis,
 }: {
   label: string
-  value: string
+  amount: number
   emphasis?: boolean
 }) {
+  const compacted = amount >= COMPACT_ABOVE
+
   return (
     <div className="flex flex-col gap-1">
       <p className="text-xs tracking-wide text-muted-foreground uppercase">{label}</p>
@@ -129,8 +150,11 @@ function Figure({
             : 'font-serif text-2xl leading-none font-medium text-navy-deep tabular-nums'
         }
       >
-        {value}
+        {compacted ? compactRupees(amount) : rupees.format(amount)}
       </p>
+      {compacted && (
+        <p className="text-xs text-muted-foreground tabular-nums">{rupees.format(amount)}</p>
+      )}
     </div>
   )
 }
@@ -226,11 +250,11 @@ export function EmiCalculator() {
 
             {/* ── Results ────────────────────────────────────────────── */}
             <div className="flex flex-col gap-8 border-t border-navy/10 pt-8 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-16">
-              <Figure label="Monthly EMI" value={rupees.format(emi)} emphasis />
+              <Figure label="Monthly EMI" amount={emi} emphasis />
 
               <div className="grid grid-cols-2 gap-6">
-                <Figure label="Total interest" value={rupees.format(totalInterest)} />
-                <Figure label="Total payable" value={rupees.format(totalPayable)} />
+                <Figure label="Total interest" amount={totalInterest} />
+                <Figure label="Total payable" amount={totalPayable} />
               </div>
 
               <div className="flex flex-col gap-3">
