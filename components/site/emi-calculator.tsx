@@ -14,9 +14,37 @@ import { Reveal, SectionHeading } from './motion'
 const PRINCIPAL_COLOR = '#1d60bc'
 const INTEREST_COLOR = '#bb881a'
 
-const AMOUNT = { min: 100_000, max: 10_000_000, step: 50_000 }
-const RATE = { min: 8, max: 12, step: 0.1 }
+const AMOUNT = { min: 100_000, max: 500_000_000 }
+const RATE = { min: 8, max: 28, step: 0.1 }
 const TENURE = { min: 1, max: 30, step: 1 }
+
+/**
+ * The amount slider is logarithmic.
+ *
+ * Spread linearly from ₹1 L to ₹50 Cr, a typical ₹25 L loan would sit within
+ * the first half-percent of the track — a single pixel on most screens. On a
+ * log scale each drag changes the amount by a proportion rather than a fixed
+ * sum, so the lakhs stay as reachable as the crores.
+ */
+const AMOUNT_POSITIONS = 1000
+const LOG_MIN = Math.log(AMOUNT.min)
+const LOG_SPAN = Math.log(AMOUNT.max) - LOG_MIN
+
+/** Rounds to a figure someone would actually say out loud at that magnitude. */
+function snapAmount(value: number) {
+  const grain =
+    value >= 100_000_000 ? 2_500_000 : value >= 10_000_000 ? 500_000 : value >= 1_000_000 ? 100_000 : 25_000
+  return Math.round(value / grain) * grain
+}
+
+function positionToAmount(position: number) {
+  const raw = Math.exp(LOG_MIN + (position / AMOUNT_POSITIONS) * LOG_SPAN)
+  return Math.min(AMOUNT.max, Math.max(AMOUNT.min, snapAmount(raw)))
+}
+
+function amountToPosition(amount: number) {
+  return Math.round(((Math.log(amount) - LOG_MIN) / LOG_SPAN) * AMOUNT_POSITIONS)
+}
 
 const rupees = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -143,7 +171,7 @@ export function EmiCalculator() {
               EMI <span className="text-gold-gradient">Calculator</span>
             </>
           }
-          description="Estimate your monthly instalment across the 8% to 12% range our partner Banks, NBFCs and HFCs typically offer. Move the sliders to see what fits your budget."
+          description="Estimate your monthly instalment across the 8% to 28% range our partner Banks, NBFCs and HFCs offer, from personal loans to large secured facilities. Move the sliders to see what fits your budget."
         />
 
         <Reveal>
@@ -153,14 +181,14 @@ export function EmiCalculator() {
               <Slider
                 id="emi-amount"
                 label="Loan amount"
-                value={amount}
-                min={AMOUNT.min}
-                max={AMOUNT.max}
-                step={AMOUNT.step}
-                onChange={setAmount}
+                value={amountToPosition(amount)}
+                min={0}
+                max={AMOUNT_POSITIONS}
+                step={1}
+                onChange={(position) => setAmount(positionToAmount(position))}
                 display={compactRupees(amount)}
                 minLabel="₹1 L"
-                maxLabel="₹1 Cr"
+                maxLabel="₹50 Cr"
               />
 
               <Slider
@@ -173,7 +201,7 @@ export function EmiCalculator() {
                 onChange={setRate}
                 display={`${rate.toFixed(1)}%`}
                 minLabel="8%"
-                maxLabel="12%"
+                maxLabel="28%"
               />
 
               <Slider
