@@ -119,6 +119,30 @@ links in outbound email are correct.
 
 ---
 
+## Email
+
+Two senders, on purpose.
+
+**SMTP (`lib/mail.ts`)** carries everything addressed to a specific person:
+registration OTP, login OTP, password reset, approval and rejection notices,
+payout notifications.
+
+**Web3Forms (`lib/web3forms.ts`)** carries the public enquiry form only.
+
+Web3Forms cannot replace SMTP:
+
+- There is no arbitrary recipient field. Submissions reach the inbox registered
+  against the access key, so an OTP sent through it would arrive in the
+  company's inbox rather than the applicant's. The autoresponder is the only
+  route back to the submitter, and it is Pro-only, production-only, and sends a
+  fixed template that cannot carry a per-user code.
+- The free plan rejects server-side calls: *"This method is not allowed. Use our
+  API in client side."* The browser posts directly, and the access key is public
+  by design.
+
+To stop using Gmail SMTP, swap `sendEmail` in `lib/mail.ts` for a transactional
+provider (Resend, Brevo, SES). That is the real alternative — not Web3Forms.
+
 ## Backups
 
 Two things must be backed up, and they are useless without each other:
