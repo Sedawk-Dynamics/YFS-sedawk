@@ -26,6 +26,14 @@ RUN pnpm prisma generate
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# NEXT_PUBLIC_* values are inlined into the client bundle by `next build`, so
+# they must be present here — setting them only as runtime variables leaves the
+# built JavaScript with empty strings. Pass them as build arguments.
+ARG NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY=""
+ARG NEXT_PUBLIC_APP_URL="http://localhost:3000"
+ENV NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY=$NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
 # Placeholders for modules that read these at import time. Nothing here reaches
 # a database or a real secret, and they do not persist into the final image.
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \

@@ -77,6 +77,20 @@ somewhere you will still have in a year.
 Do **not** set `OTP_ECHO` in production. It is ignored when `NODE_ENV=production`,
 but leaving it out avoids any doubt.
 
+### Build-time Arguments
+
+`NEXT_PUBLIC_*` values are inlined into the client bundle by `next build`, so
+they must be set as **build arguments**, not only as environment variables. Set
+these under **Environment → Build-time Arguments**:
+
+```sh
+NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY="<your Web3Forms access key>"
+NEXT_PUBLIC_APP_URL="https://yfsinfinity.com"
+```
+
+Miss these and the site still builds, but the contact form reports "not
+configured" because the key compiled down to an empty string.
+
 ## 5. Deploy
 
 Press **Deploy**. On start the container:
