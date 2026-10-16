@@ -14,17 +14,34 @@ const ENDPOINT = 'https://api.web3forms.com/submit'
 
 export type Web3FormsResult = { ok: true } | { ok: false; error: string }
 
-export const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ?? ''
+/**
+ * Fetched from /api/contact-config at submit time rather than inlined at build
+ * time, so the key stays an ordinary runtime environment variable.
+ */
+let cachedKey: string | null = null
+
+async function accessKey(): Promise<string> {
+  if (cachedKey !== null) return cachedKey
+  try {
+    const response = await fetch('/api/contact-config', { cache: 'no-store' })
+    const body = (await response.json()) as { accessKey?: string }
+    cachedKey = body.accessKey ?? ''
+  } catch {
+    cachedKey = ''
+  }
+  return cachedKey
+}
 
 export async function submitToWeb3Forms(
   fields: Record<string, string>,
 ): Promise<Web3FormsResult> {
-  if (!WEB3FORMS_ACCESS_KEY) {
-    console.error('[web3forms] NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY is not set')
+  const key = await accessKey()
+  if (!key) {
+    console.error('[web3forms] WEB3FORMS_ACCESS_KEY is not set on the server')
     return { ok: false, error: 'The enquiry form is not configured. Please call us instead.' }
   }
 
-  const payload: Record<string, string> = { access_key: WEB3FORMS_ACCESS_KEY }
+  const payload: Record<string, string> = { access_key: key }
   for (const [key, value] of Object.entries(fields)) {
     if (value) payload[key] = value
   }
