@@ -10,8 +10,15 @@
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const accessKey =
-    process.env.WEB3FORMS_ACCESS_KEY ?? process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ?? ''
+  const env = process.env as Record<string, string | undefined>
+
+  // The NEXT_PUBLIC_ name is assembled rather than written out: Next inlines
+  // any literal `process.env.NEXT_PUBLIC_*` at build time — in server code
+  // too — which would freeze it to whatever was set during the build (nothing).
+  // Looking it up dynamically keeps it a genuine runtime read, so deployments
+  // that already set the NEXT_PUBLIC_ name keep working.
+  const publicName = ['NEXT', 'PUBLIC', 'WEB3FORMS', 'ACCESS', 'KEY'].join('_')
+  const accessKey = env.WEB3FORMS_ACCESS_KEY ?? env[publicName] ?? ''
 
   return Response.json(
     { accessKey },
